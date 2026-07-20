@@ -4,11 +4,11 @@ import React from "react";
 
 type Player = {
   name: string;
-  position: string;
+  position: "QB" | "RB" | "WR" | "TE";
 };
 
 const PLAYER_POOL: Player[] = [
-  // Quarterbacks
+  // QBs
   { name: "Lamar Jackson", position: "QB" },
   { name: "Josh Allen", position: "QB" },
   { name: "Malik Willis", position: "QB" },
@@ -18,7 +18,7 @@ const PLAYER_POOL: Player[] = [
   { name: "Jayden Daniels", position: "QB" },
   { name: "Jalen Hurts", position: "QB" },
 
-  // Running Backs
+  // RBs
   { name: "Derrick Henry", position: "RB" },
   { name: "Chase Brown", position: "RB" },
   { name: "Quinshon Judkins", position: "RB" },
@@ -41,8 +41,10 @@ const PLAYER_POOL: Player[] = [
   { name: "Travis Etienne Jr", position: "RB" },
   { name: "Saquon Barkley", position: "RB" },
   { name: "Kyren Williams", position: "RB" },
+  { name: "Christian McCaffrey", position: "RB" },
+  { name: "Javonte Williams", position: "RB" },
 
-  // Wide Receivers
+  // WRs
   { name: "Zay Flowers", position: "WR" },
   { name: "Ja'Marr Chase", position: "WR" },
   { name: "Tee Higgins", position: "WR" },
@@ -73,7 +75,7 @@ const PLAYER_POOL: Player[] = [
   { name: "Tetairoa McMillan", position: "WR" },
   { name: "Puka Nacua", position: "WR" },
 
-  // Tight Ends
+  // TEs
   { name: "Harold Fannin Jr", position: "TE" },
   { name: "Tyler Warren", position: "TE" },
   { name: "Colston Loveland", position: "TE" },
@@ -83,30 +85,44 @@ const PLAYER_POOL: Player[] = [
   { name: "Sam LaPorta", position: "TE" },
   { name: "Tucker Kraft", position: "TE" },
   { name: "Kyle Pitts", position: "TE" },
-
-  // Special case: Christian McCaffrey (RB)
-  { name: "Christian McCaffrey", position: "RB" },
-
-  // Special case: George Kittle (TE)
   { name: "George Kittle", position: "TE" },
-
-  // Special case: Javonte Williams (RB)
-  { name: "Javonte Williams", position: "RB" },
 ];
 
-export default function PlayersPage() {
+function Section({ title, players }: { title: string; players: Player[] }) {
   return (
-    <div className="p-6 text-white">
-      <h1 className="text-3xl font-bold mb-6">Player Pool</h1>
-
-      <div className="flex flex-col gap-4">
-        {PLAYER_POOL.map((p, idx) => (
-          <div key={idx} className="bg-gray-800 p-4 rounded-lg shadow-md">
-            <div className="text-xl font-semibold">{p.name}</div>
-            <div className="text-gray-400">{p.position}</div>
+    <div className="mb-10">
+      <h2 className="text-2xl font-semibold mb-4">{title}</h2>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        {players.map((p) => (
+          <div
+            key={p.name}
+            className="bg-[#1a1d24] border border-[#2a2f3a] p-4 rounded-xl shadow-md flex justify-between items-center"
+          >
+            <span className="font-medium">{p.name}</span>
+            <span className="text-gray-400">{p.position}</span>
           </div>
         ))}
       </div>
+    </div>
+  );
+}
+
+export default function PlayersPage() {
+  const qbs = PLAYER_POOL.filter((p) => p.position === "QB");
+  const rbs = PLAYER_POOL.filter((p) => p.position === "RB");
+  const wrs = PLAYER_POOL.filter((p) => p.position === "WR");
+  const tes = PLAYER_POOL.filter((p) => p.position === "TE");
+
+  return (
+    <div className="p-6 text-white">
+      <h1 className="text-4xl font-extrabold mb-8 tracking-tight">
+        Player Pool
+      </h1>
+
+      <Section title="Quarterbacks" players={qbs} />
+      <Section title="Running Backs" players={rbs} />
+      <Section title="Wide Receivers" players={wrs} />
+      <Section title="Tight Ends" players={tes} />
     </div>
   );
 }
