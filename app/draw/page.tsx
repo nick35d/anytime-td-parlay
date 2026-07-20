@@ -90,39 +90,48 @@ const PLAYER_POOL: Player[] = [
 
 function DrawAnimation({ players }: { players: Player[] }) {
   const [revealed, setRevealed] = useState<string[]>([]);
+  const [index, setIndex] = useState(0);
 
   useEffect(() => {
-    if (players.length === 0) {
-      setRevealed([]);
-      return;
-    }
-
-    let i = 0;
     setRevealed([]);
-    const interval = setInterval(() => {
-      setRevealed((prev) => [...prev, players[i].name]);
-      i++;
-      if (i >= players.length) clearInterval(interval);
-    }, 1000);
+    setIndex(0);
 
-    return () => clearInterval(interval);
+    let cancelled = false;
+
+    const revealNext = () => {
+      if (cancelled) return;
+      setRevealed((prev) => [...prev, players[index].name]);
+      setIndex((i) => i + 1);
+    };
+
+    if (players.length > 0) {
+      const interval = setInterval(() => {
+        revealNext();
+      }, 900);
+
+      return () => {
+        cancelled = true;
+        clearInterval(interval);
+      };
+    }
   }, [players]);
 
   return (
-    <div className="flex flex-col items-center mt-8">
-      <div className="relative w-40 h-40">
-        {/* Hat */}
-        <div className="absolute bottom-0 w-full h-20 bg-black rounded-b-full border border-gray-700" />
+    <div className="flex flex-col items-center mt-10">
+      {/* Hat */}
+      <div className="relative w-48 h-48">
+        <div className="absolute bottom-0 w-full h-24 bg-black rounded-b-full border border-gray-700 shadow-xl" />
 
         {/* Hand */}
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-24 h-24 bg-yellow-200 rounded-full animate-bounce shadow-lg" />
+        <div className="absolute -top-6 left-1/2 -translate-x-1/2 w-32 h-32 bg-yellow-200 rounded-full shadow-lg animate-[wiggle_1.2s_ease-in-out_infinite]" />
       </div>
 
-      <div className="mt-6 flex flex-col gap-3">
+      {/* Cards */}
+      <div className="mt-8 flex flex-col gap-4">
         {revealed.map((name) => (
           <div
             key={name}
-            className="w-64 bg-white text-black p-3 rounded-lg shadow-md animate-slide text-center font-semibold"
+            className="w-72 bg-white text-black p-4 rounded-lg shadow-xl animate-slide text-center font-bold tracking-wide"
           >
             {name}
           </div>
@@ -144,7 +153,7 @@ export default function DrawPage() {
   return (
     <div className="text-white">
       <h1 className="text-4xl font-extrabold mb-6 tracking-tight">
-        Anytime TD Parlay Draw
+        Your Anytime TD Parlay
       </h1>
 
       <div className="flex flex-col gap-4 max-w-sm">
