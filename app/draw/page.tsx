@@ -8,6 +8,7 @@ type Player = {
 };
 
 const PLAYER_POOL: Player[] = [
+  // QBs
   { name: "Lamar Jackson", position: "QB" },
   { name: "Josh Allen", position: "QB" },
   { name: "Malik Willis", position: "QB" },
@@ -17,6 +18,7 @@ const PLAYER_POOL: Player[] = [
   { name: "Jayden Daniels", position: "QB" },
   { name: "Jalen Hurts", position: "QB" },
 
+  // RBs
   { name: "Derrick Henry", position: "RB" },
   { name: "Chase Brown", position: "RB" },
   { name: "Quinshon Judkins", position: "RB" },
@@ -42,6 +44,7 @@ const PLAYER_POOL: Player[] = [
   { name: "Christian McCaffrey", position: "RB" },
   { name: "Javonte Williams", position: "RB" },
 
+  // WRs
   { name: "Zay Flowers", position: "WR" },
   { name: "Ja'Marr Chase", position: "WR" },
   { name: "Tee Higgins", position: "WR" },
@@ -72,6 +75,7 @@ const PLAYER_POOL: Player[] = [
   { name: "Tetairoa McMillan", position: "WR" },
   { name: "Puka Nacua", position: "WR" },
 
+  // TEs
   { name: "Harold Fannin Jr", position: "TE" },
   { name: "Tyler Warren", position: "TE" },
   { name: "Colston Loveland", position: "TE" },
@@ -85,7 +89,7 @@ const PLAYER_POOL: Player[] = [
 ];
 
 function DrawAnimation({ players }: { players: Player[] }) {
-  const [revealed, setRevealed] = useState<string[]>([]);
+  const [revealed, setRevealed] = useState<Player[]>([]);
 
   useEffect(() => {
     setRevealed([]);
@@ -93,7 +97,7 @@ function DrawAnimation({ players }: { players: Player[] }) {
 
     const reveal = (i: number) => {
       if (cancelled) return;
-      setRevealed((prev) => [...prev, players[i].name]);
+      setRevealed((prev) => [...prev, players[i]]);
       if (i + 1 < players.length) {
         setTimeout(() => reveal(i + 1), 900);
       }
@@ -108,19 +112,20 @@ function DrawAnimation({ players }: { players: Player[] }) {
 
   return (
     <div className="mt-8 flex flex-col items-center gap-4">
-      {revealed.map((name, idx) => (
+      {revealed.map((player, idx) => (
         <div
-          key={name + idx}
+          key={player.name + idx}
           className="w-80 bg-[#111827] border border-[#1f2937] rounded-xl shadow-xl p-4 flex items-center justify-between animate-slide"
         >
           <div className="flex flex-col">
             <span className="text-xs uppercase tracking-wide text-gray-400">
               Draw {idx + 1}
             </span>
-            <span className="text-xl font-bold text-white">{name}</span>
+            <span className="text-xl font-bold text-white">{player.name}</span>
           </div>
-          <div className="w-10 h-10 rounded-full bg-green-600 flex items-center justify-center text-white font-bold">
-            TD
+
+          <div className="px-3 py-1 rounded-full bg-blue-600 text-white font-bold text-sm">
+            {player.position}
           </div>
         </div>
       ))}
@@ -131,6 +136,16 @@ function DrawAnimation({ players }: { players: Player[] }) {
 export default function DrawPage() {
   const [count, setCount] = useState(2);
   const [drawnPlayers, setDrawnPlayers] = useState<Player[]>([]);
+  const [userName, setUserName] = useState<string>("Your");
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const stored = localStorage.getItem("userName");
+      if (stored && stored.trim().length > 0) {
+        setUserName(stored);
+      }
+    }
+  }, []);
 
   const handleDraw = () => {
     const shuffled = [...PLAYER_POOL].sort(() => Math.random() - 0.5);
@@ -138,9 +153,9 @@ export default function DrawPage() {
   };
 
   return (
-    <div className="text-white">
+    <div className="text-white w-full max-w-xl">
       <h1 className="text-4xl font-extrabold mb-6 tracking-tight">
-        Your Anytime TD Parlay
+        {userName}'s Draw
       </h1>
 
       <div className="flex flex-col gap-4 max-w-sm">
@@ -164,12 +179,7 @@ export default function DrawPage() {
         </button>
       </div>
 
-      {drawnPlayers.length > 0 && (
-        <div className="mt-8">
-          <h2 className="text-2xl font-semibold mb-3">Your Draw</h2>
-          <DrawAnimation players={drawnPlayers} />
-        </div>
-      )}
+      {drawnPlayers.length > 0 && <DrawAnimation players={drawnPlayers} />}
     </div>
   );
 }
