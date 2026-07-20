@@ -1,18 +1,12 @@
-import React from 'react';
-
 export default function HistoryPage() {
   return (
-    <div className="space-y-6">
-      <section className="main-card">
-        <h2 className="text-lg font-semibold">Weekly History</h2>
-        <p className="text-sm text-slate-300 mb-4">
-          This will show each week&apos;s participants and their players, with hit/miss icons.
-        </p>
-
-        <div className="border border-slate-700 rounded p-4 text-sm bg-slate-950/40">
-          <p>Week-by-week history coming soon...</p>
-        </div>
-      </section>
+    <div className="text-white">
+      <h1 className="text-4xl font-extrabold mb-4 tracking-tight">
+        History
+      </h1>
+      <p className="text-gray-300 text-lg">
+        History tracking will go here — past parlays, results, and stats.
+      </p>
     </div>
   );
 }
