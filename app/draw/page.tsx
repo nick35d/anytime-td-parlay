@@ -85,44 +85,21 @@ const PLAYER_POOL: Player[] = [
 ];
 
 function DrawAnimation({ players }: { players: Player[] }) {
-  const [currentIndex, setCurrentIndex] = useState(0);
   const [revealed, setRevealed] = useState<string[]>([]);
-  const [stage, setStage] = useState<"handDown" | "handUp" | "unfold" | "done">(
-    "handDown"
-  );
 
   useEffect(() => {
-    if (players.length === 0) return;
-
+    setRevealed([]);
     let cancelled = false;
 
-    const runSequence = (i: number) => {
+    const reveal = (i: number) => {
       if (cancelled) return;
-
-      setStage("handDown");
-
-      setTimeout(() => {
-        if (cancelled) return;
-        setStage("handUp");
-      }, 900);
-
-      setTimeout(() => {
-        if (cancelled) return;
-        setStage("unfold");
-      }, 1800);
-
-      setTimeout(() => {
-        if (cancelled) return;
-        setRevealed((prev) => [...prev, players[i].name]);
-        setStage("done");
-
-        if (i + 1 < players.length) {
-          setTimeout(() => runSequence(i + 1), 1200);
-        }
-      }, 2600);
+      setRevealed((prev) => [...prev, players[i].name]);
+      if (i + 1 < players.length) {
+        setTimeout(() => reveal(i + 1), 900);
+      }
     };
 
-    runSequence(0);
+    if (players.length > 0) reveal(0);
 
     return () => {
       cancelled = true;
@@ -130,73 +107,23 @@ function DrawAnimation({ players }: { players: Player[] }) {
   }, [players]);
 
   return (
-    <div className="flex flex-col items-center mt-10">
-
-      {/* Cowboy Hat (cowprint) */}
-      <svg width="220" height="120" viewBox="0 0 220 120">
-        <defs>
-          <pattern id="cowprint" patternUnits="userSpaceOnUse" width="40" height="40">
-            <rect width="40" height="40" fill="white" />
-            <circle cx="10" cy="10" r="10" fill="black" />
-            <circle cx="30" cy="25" r="12" fill="black" />
-            <circle cx="15" cy="30" r="8" fill="black" />
-          </pattern>
-        </defs>
-
-        <path
-          d="M20 80 Q110 10 200 80 Q150 110 70 110 Q10 100 20 80Z"
-          fill="url(#cowprint)"
-          stroke="black"
-          strokeWidth="3"
-        />
-      </svg>
-
-      {/* Hand */}
-      <div
-        className={`transition-transform duration-700 ${
-          stage === "handDown"
-            ? "translate-y-0"
-            : stage === "handUp"
-            ? "-translate-y-20"
-            : "-translate-y-24"
-        }`}
-      >
-        <svg width="140" height="140" viewBox="0 0 140 140">
-          <path
-            d="M40 20 Q60 10 80 20 Q100 30 110 60 Q115 80 100 100 Q80 120 60 110 Q40 100 30 80 Q20 60 30 40Z"
-            fill="black"
-          />
-        </svg>
-      </div>
-
-      {/* Paper Unfold */}
-      {stage === "unfold" && (
-        <div className="flex gap-1 mt-4">
-          <div className="w-24 h-32 bg-white border border-gray-400 origin-left animate-[unfoldLeft_0.8s_ease-out_forwards]" />
-          <div className="w-24 h-32 bg-white border border-gray-400 origin-right animate-[unfoldRight_0.8s_ease-out_forwards]" />
-        </div>
-      )}
-
-      {/* Name Reveal */}
-      {stage === "done" && revealed.length > 0 && (
-        <div className="mt-6 text-center">
-          <div className="text-black bg-white p-4 rounded shadow-xl text-xl font-bold animate-slide">
-            {revealed[revealed.length - 1]}
+    <div className="mt-8 flex flex-col items-center gap-4">
+      {revealed.map((name, idx) => (
+        <div
+          key={name + idx}
+          className="w-80 bg-[#111827] border border-[#1f2937] rounded-xl shadow-xl p-4 flex items-center justify-between animate-slide"
+        >
+          <div className="flex flex-col">
+            <span className="text-xs uppercase tracking-wide text-gray-400">
+              Draw {idx + 1}
+            </span>
+            <span className="text-xl font-bold text-white">{name}</span>
+          </div>
+          <div className="w-10 h-10 rounded-full bg-green-600 flex items-center justify-center text-white font-bold">
+            TD
           </div>
         </div>
-      )}
-
-      {/* All revealed names */}
-      <div className="mt-10 flex flex-col gap-3">
-        {revealed.map((name) => (
-          <div
-            key={name}
-            className="text-black bg-white p-3 rounded shadow-md text-lg font-semibold"
-          >
-            {name}
-          </div>
-        ))}
-      </div>
+      ))}
     </div>
   );
 }
