@@ -1,114 +1,99 @@
-'use client';
+"use client";
 
-import React, { useEffect, useState } from 'react';
+import React, { useState, useEffect } from "react";
 
-type Player = { name: string };
+type Player = {
+  name: string;
+  position: string;
+  team: string;
+};
 
 const PLAYER_POOL: Player[] = [
-  { name: 'Lamar Jackson' },
-  { name: 'Ja\'Marr Chase' },
-  { name: 'Christian McCaffrey' },
-  { name: 'Justin Jefferson' },
-  { name: 'Bijan Robinson' },
-  { name: 'Amon-Ra St. Brown' },
+  { name: "Christian McCaffrey", position: "RB", team: "SF" },
+  { name: "Justin Jefferson", position: "WR", team: "MIN" },
+  { name: "Sam LaPorta", position: "TE", team: "DET" },
+  { name: "Amon-Ra St. Brown", position: "WR", team: "DET" },
+  { name: "Bijan Robinson", position: "RB", team: "ATL" },
+  { name: "Lamar Jackson", position: "QB", team: "BAL" },
 ];
 
-function getRandomPlayers(count: number): Player[] {
-  const shuffled = [...PLAYER_POOL].sort(() => Math.random() - 0.5);
-  return shuffled.slice(0, count);
+function DrawAnimation({ players }: { players: Player[] }) {
+  const [revealed, setRevealed] = useState<string[]>([]);
+
+  useEffect(() => {
+    let i = 0;
+    const interval = setInterval(() => {
+      setRevealed((prev) => [...prev, players[i].name]);
+      i++;
+      if (i >= players.length) clearInterval(interval);
+    }, 1200);
+    return () => clearInterval(interval);
+  }, [players]);
+
+  return (
+    <div className="flex flex-col items-center mt-6">
+      <div className="relative w-40 h-40">
+        {/* Hat */}
+        <div className="absolute bottom-0 w-full h-20 bg-black rounded-b-full"></div>
+
+        {/* Hand */}
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-24 h-24 bg-yellow-200 rounded-full animate-bounce"></div>
+      </div>
+
+      <div className="mt-6 flex flex-col gap-3">
+        {revealed.map((name, idx) => (
+          <div
+            key={idx}
+            className="w-48 bg-white text-black p-3 rounded shadow-md animate-slide"
+          >
+            {name}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
 }
 
 export default function DrawPage() {
-  const [savedName, setSavedName] = useState<string | null>(null);
-  const [drawn, setDrawn] = useState<Player[] | null>(null);
-  const [animKey, setAnimKey] = useState<number>(0);
-  const [playerCount, setPlayerCount] = useState<number>(2); // default 2
-
-  useEffect(() => {
-    const stored = window.localStorage.getItem('td_parlay_name');
-    if (stored) setSavedName(stored);
-  }, []);
+  const [count, setCount] = useState(2);
+  const [drawnPlayers, setDrawnPlayers] = useState<Player[]>([]);
 
   const handleDraw = () => {
-    const players = getRandomPlayers(playerCount);
-    setDrawn(players);
-    setAnimKey((k) => k + 1);
+    const shuffled = [...PLAYER_POOL].sort(() => Math.random() - 0.5);
+    setDrawnPlayers(shuffled.slice(0, count));
   };
 
   return (
-    <div className="space-y-6">
-      <section className="main-card">
-        <h2 className="text-lg font-semibold">Draw Players</h2>
+    <div>
+      <h1 className="text-3xl font-bold mb-6">Anytime TD Parlay Draw</h1>
 
-        <p className="text-sm text-slate-300">
-          {savedName
-            ? `You are drawing for ${savedName}.`
-            : `Enter your name on the Home page first.`}
-        </p>
-
-        <div className="mt-4">
-          <label className="text-sm text-slate-300 block mb-1">
-            Number of Players
-          </label>
-          <select
-            value={playerCount}
-            onChange={(e) => setPlayerCount(Number(e.target.value))}
-            className="px-3 py-2 rounded border border-slate-700 bg-slate-900 text-slate-100 text-sm w-full"
-          >
-            <option value={1}>1 Player</option>
-            <option value={2}>2 Players</option>
-            <option value={3}>3 Players</option>
-            <option value={4}>4 Players</option>
-          </select>
-        </div>
+      <div className="flex flex-col gap-4 max-w-sm">
+        <label className="text-lg">Number of Players</label>
+        <select
+          value={count}
+          onChange={(e) => setCount(Number(e.target.value))}
+          className="p-3 rounded bg-gray-800 text-white"
+        >
+          <option value={1}>1 Player</option>
+          <option value={2}>2 Players</option>
+          <option value={3}>3 Players</option>
+          <option value={4}>4 Players</option>
+        </select>
 
         <button
           onClick={handleDraw}
-          className="button-primary mt-4 w-full"
-          disabled={!savedName}
+          className="bg-green-600 hover:bg-green-700 transition p-3 rounded text-white font-semibold"
         >
-          {savedName ? 'Draw My Players' : 'Name Required'}
+          Draw My Players
         </button>
+      </div>
 
-        {drawn && (
-          <div className="draw-container" key={animKey}>
-            <div className="hat-rim" />
-            <div className="hat" />
-            <div className="hand">
-              <div className="hand-shape" />
-            </div>
-            <div className="paper flex items-center justify-center text-xs font-semibold text-slate-900">
-              {drawn[0]?.name}
-            </div>
-          </div>
-        )}
-
-        {drawn && (
-          <div className="mt-6 space-y-2">
-            <h3 className="text-md font-semibold">Your Draw:</h3>
-            <ul className="space-y-1 text-sm">
-              {drawn.map((p) => (
-                <li
-                  key={p.name}
-                  className="border border-slate-700 rounded px-3 py-2 bg-slate-900/60"
-                >
-                  {p.name}
-                </li>
-              ))}
-            </ul>
-          </div>
-        )}
-      </section>
-
-      <section className="main-card">
-        <h3 className="text-md font-semibold mb-2">Your Weekly History</h3>
-        <p className="text-sm text-slate-300">
-          This will show all your draws for the current week once we hook up the backend.
-        </p>
-        <div className="border border-slate-700 rounded p-4 text-sm bg-slate-950/40">
-          <p>History coming soon...</p>
+      {drawnPlayers.length > 0 && (
+        <div className="mt-6">
+          <h2 className="text-xl font-semibold mb-2">Your Draw:</h2>
+          <DrawAnimation players={drawnPlayers} />
         </div>
-      </section>
+      )}
     </div>
   );
 }
