@@ -8,7 +8,6 @@ type Player = {
 };
 
 const PLAYER_POOL: Player[] = [
-  // QBs
   { name: "Lamar Jackson", position: "QB" },
   { name: "Josh Allen", position: "QB" },
   { name: "Malik Willis", position: "QB" },
@@ -18,7 +17,6 @@ const PLAYER_POOL: Player[] = [
   { name: "Jayden Daniels", position: "QB" },
   { name: "Jalen Hurts", position: "QB" },
 
-  // RBs
   { name: "Derrick Henry", position: "RB" },
   { name: "Chase Brown", position: "RB" },
   { name: "Quinshon Judkins", position: "RB" },
@@ -44,7 +42,6 @@ const PLAYER_POOL: Player[] = [
   { name: "Christian McCaffrey", position: "RB" },
   { name: "Javonte Williams", position: "RB" },
 
-  // WRs
   { name: "Zay Flowers", position: "WR" },
   { name: "Ja'Marr Chase", position: "WR" },
   { name: "Tee Higgins", position: "WR" },
@@ -75,7 +72,6 @@ const PLAYER_POOL: Player[] = [
   { name: "Tetairoa McMillan", position: "WR" },
   { name: "Puka Nacua", position: "WR" },
 
-  // TEs
   { name: "Harold Fannin Jr", position: "TE" },
   { name: "Tyler Warren", position: "TE" },
   { name: "Colston Loveland", position: "TE" },
@@ -89,49 +85,113 @@ const PLAYER_POOL: Player[] = [
 ];
 
 function DrawAnimation({ players }: { players: Player[] }) {
+  const [currentIndex, setCurrentIndex] = useState(0);
   const [revealed, setRevealed] = useState<string[]>([]);
-  const [index, setIndex] = useState(0);
+  const [stage, setStage] = useState<"handDown" | "handUp" | "unfold" | "done">(
+    "handDown"
+  );
 
   useEffect(() => {
-    setRevealed([]);
-    setIndex(0);
+    if (players.length === 0) return;
 
     let cancelled = false;
 
-    const revealNext = () => {
+    const runSequence = (i: number) => {
       if (cancelled) return;
-      setRevealed((prev) => [...prev, players[index].name]);
-      setIndex((i) => i + 1);
-    };
 
-    if (players.length > 0) {
-      const interval = setInterval(() => {
-        revealNext();
+      setStage("handDown");
+
+      setTimeout(() => {
+        if (cancelled) return;
+        setStage("handUp");
       }, 900);
 
-      return () => {
-        cancelled = true;
-        clearInterval(interval);
-      };
-    }
+      setTimeout(() => {
+        if (cancelled) return;
+        setStage("unfold");
+      }, 1800);
+
+      setTimeout(() => {
+        if (cancelled) return;
+        setRevealed((prev) => [...prev, players[i].name]);
+        setStage("done");
+
+        if (i + 1 < players.length) {
+          setTimeout(() => runSequence(i + 1), 1200);
+        }
+      }, 2600);
+    };
+
+    runSequence(0);
+
+    return () => {
+      cancelled = true;
+    };
   }, [players]);
 
   return (
     <div className="flex flex-col items-center mt-10">
-      {/* Hat */}
-      <div className="relative w-48 h-48">
-        <div className="absolute bottom-0 w-full h-24 bg-black rounded-b-full border border-gray-700 shadow-xl" />
 
-        {/* Hand */}
-        <div className="absolute -top-6 left-1/2 -translate-x-1/2 w-32 h-32 bg-yellow-200 rounded-full shadow-lg animate-[wiggle_1.2s_ease-in-out_infinite]" />
+      {/* Cowboy Hat (cowprint) */}
+      <svg width="220" height="120" viewBox="0 0 220 120">
+        <defs>
+          <pattern id="cowprint" patternUnits="userSpaceOnUse" width="40" height="40">
+            <rect width="40" height="40" fill="white" />
+            <circle cx="10" cy="10" r="10" fill="black" />
+            <circle cx="30" cy="25" r="12" fill="black" />
+            <circle cx="15" cy="30" r="8" fill="black" />
+          </pattern>
+        </defs>
+
+        <path
+          d="M20 80 Q110 10 200 80 Q150 110 70 110 Q10 100 20 80Z"
+          fill="url(#cowprint)"
+          stroke="black"
+          strokeWidth="3"
+        />
+      </svg>
+
+      {/* Hand */}
+      <div
+        className={`transition-transform duration-700 ${
+          stage === "handDown"
+            ? "translate-y-0"
+            : stage === "handUp"
+            ? "-translate-y-20"
+            : "-translate-y-24"
+        }`}
+      >
+        <svg width="140" height="140" viewBox="0 0 140 140">
+          <path
+            d="M40 20 Q60 10 80 20 Q100 30 110 60 Q115 80 100 100 Q80 120 60 110 Q40 100 30 80 Q20 60 30 40Z"
+            fill="black"
+          />
+        </svg>
       </div>
 
-      {/* Cards */}
-      <div className="mt-8 flex flex-col gap-4">
+      {/* Paper Unfold */}
+      {stage === "unfold" && (
+        <div className="flex gap-1 mt-4">
+          <div className="w-24 h-32 bg-white border border-gray-400 origin-left animate-[unfoldLeft_0.8s_ease-out_forwards]" />
+          <div className="w-24 h-32 bg-white border border-gray-400 origin-right animate-[unfoldRight_0.8s_ease-out_forwards]" />
+        </div>
+      )}
+
+      {/* Name Reveal */}
+      {stage === "done" && revealed.length > 0 && (
+        <div className="mt-6 text-center">
+          <div className="text-black bg-white p-4 rounded shadow-xl text-xl font-bold animate-slide">
+            {revealed[revealed.length - 1]}
+          </div>
+        </div>
+      )}
+
+      {/* All revealed names */}
+      <div className="mt-10 flex flex-col gap-3">
         {revealed.map((name) => (
           <div
             key={name}
-            className="w-72 bg-white text-black p-4 rounded-lg shadow-xl animate-slide text-center font-bold tracking-wide"
+            className="text-black bg-white p-3 rounded shadow-md text-lg font-semibold"
           >
             {name}
           </div>
