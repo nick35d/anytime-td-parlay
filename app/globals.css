@@ -2,6 +2,7 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Animation for draw cards */
 @keyframes slide {
   from {
     transform: translateY(20px);
